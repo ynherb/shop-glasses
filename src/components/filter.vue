@@ -23,19 +23,28 @@
       <label class="form-check-label" for="defaultCheck1">{{item}}</label>
     </div>
   </div>
+  <range-price
+  :maxPrice="checkboxList.maxPrice"
+  :priceSort.sync="priceSort">
+  </range-price>
   <button type="button" class="btn btn-primary btn-sm" @click="applyFilter">Примінити</button>
 </div>
 </template>
 <script>
+import rangePrice from '../components/rangePrice'
+
 export default {
   data () {
     return {
-      filter: {
+      filter: { // добавляємо сюди властивість і отриамуємо новий фільтр
         brand: [],
         color: [],
         gender: []
       },
-      maxPrice: null
+      priceSort: {
+        min: 0,
+        max: Infinity
+      }
     }
   },
   props: {
@@ -65,6 +74,8 @@ export default {
       return obj
     },
     filteredList () {
+      let price = this.checkboxList.maxPrice
+      console.log(price)
       let key = Object.keys(this.filter).filter(item => this.filter[item].length)
       let result = this.goods.filter((item) => {
         return !(key.some(i => !this.filter[i].includes(item[i])))
@@ -76,10 +87,13 @@ export default {
     applyFilter () {
       this.$emit('update:filtered', this.filteredList)
     }
+  },
+  components: {
+    rangePrice
   }
 }
 </script>
-<style>
+<style lang="scss" scoped>
 .left-side-bar {
   padding: 20px 30px;
   position: fixed;
@@ -92,5 +106,4 @@ export default {
 .title {
   padding: 20px 0 0 0;
 }
-
 </style>

@@ -43,8 +43,3 @@ export default {
   }
 }
 </script>
-<style lang="scss">
-.draw {
-  float: right;
-}
-</style>

@@ -52,12 +52,12 @@ export default {
       // this.$store.commit('notification/SET_LOADING', true)
       // this.loadingFlag()
       // }
-      return this.de.slice(from, to)
+      return this.filterGoods.slice(from, to)
     },
     total () {
-      return Math.ceil((this.de.length - 1) / this.pages)
+      return Math.ceil((this.filterGoods.length - 1) / this.pages)
     },
-    de () {
+    filterGoods () {
       return (this.filtered.length === 0) ? this.goods : this.filtered
     }
   },

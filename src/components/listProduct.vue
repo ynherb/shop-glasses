@@ -6,10 +6,11 @@
         <p class="card-text">{{product.brand}}</p>
         <p class="card-text">{{description}}</p>
         <p class="card-text">{{product.gender}}</p>
+        <p class="card-text">{{product.color}}</p>
         <div class="d-flex justify-content-between align-items-center">
           <div class="btn-group">
-            <button type="button" class="btn btn-sm btn-outline-secondary" @click="goGoods">View</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" @click="goGoods">Переглянути</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">Добавити</button>
           </div>
           <small class="text-muted">{{currencPrice}}</small>
         </div>

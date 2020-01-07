@@ -58,14 +58,12 @@ export default {
     },
     totaly () {
       if (this.total < this.listPage.length) {
-        console.log('dsadasd')
         // якщо кількість сторінок меньше 5 то відображаємо відразу всі
         this.draw(new Array(this.total).fill(1).map((i, index) => index + 1))
       } else if (this.listPage.length !== 5 && this.total > this.listPage.length) {
-        console.log('dsasd')
         this.draw([1, 2, 3, 4, 5])
       }
-      if (this.total < +this.$route.params.id) this.red()
+      if (this.total < +this.$route.params.id) this.pageClick(1)
       return this.listPage
     }
   },
@@ -74,11 +72,7 @@ export default {
       this.page = next
       this.$router.push('page' + next)
     },
-    red () {
-      this.$router.push('page1')
-    },
     draw (arr) {
-      console.log(arr)
       this.listPage = arr
     }
   },
@@ -97,10 +91,6 @@ export default {
     }
   },
   created () {
-    if (this.total < this.listPage.length) {
-      // якщо кількість сторінок меньше 5 то відображаємо відразу всі
-      this.listPage = new Array(this.total.length).fill(1).map((i, index) => index + 1)
-    }
     this.page = +this.$route.params.id
   }
 }
