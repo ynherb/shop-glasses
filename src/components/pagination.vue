@@ -38,7 +38,8 @@ export default {
   data () {
     return {
       page: 1,
-      listPage: [1, 2, 3, 4, 5] // змінивши довжину массива зміниться кількість кнопок на pagination
+      pageNumber: 5,
+      listPage: [1, 2, 3, 4, 5]
     }
   },
   props: {
@@ -57,10 +58,10 @@ export default {
       return (this.total > 5) ? max : this.total
     },
     totaly () {
-      if (this.total < this.listPage.length) {
+      if (this.total < this.pageNumber) {
         // якщо кількість сторінок меньше 5 то відображаємо відразу всі
         this.draw(new Array(this.total).fill(1).map((i, index) => index + 1))
-      } else if (this.listPage.length !== 5 && this.total > this.listPage.length) {
+      } else if (this.listPage.length !== 5 && this.total > this.pageNumber) {
         this.draw([1, 2, 3, 4, 5])
       }
       if (this.total < +this.$route.params.id) this.pageClick(1)
@@ -70,7 +71,7 @@ export default {
   methods: {
     pageClick (next) {
       this.page = next
-      this.$router.push('page' + next)
+      this.$router.push({ path: `/product/page${next}`, query: this.$route.query })
     },
     draw (arr) {
       this.listPage = arr

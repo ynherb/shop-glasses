@@ -27,6 +27,7 @@
   :maxPrice="checkboxList.maxPrice"
   :priceSort.sync="priceSort">
   </range-price>
+  <button type="button" class="btn btn-primary btn-sm" @click="resetFilter">Скинути</button>
   <button type="button" class="btn btn-primary btn-sm" @click="applyFilter">Примінити</button>
 </div>
 </template>
@@ -43,7 +44,7 @@ export default {
       },
       priceSort: {
         min: 0,
-        max: Infinity
+        max: null
       }
     }
   },
@@ -74,22 +75,71 @@ export default {
       return obj
     },
     filteredList () {
-      let price = this.checkboxList.maxPrice
-      console.log(price)
       let key = Object.keys(this.filter).filter(item => this.filter[item].length)
+      // якщо пареметрів фільтру немає повертаємо весь список товарів
+      if (!key.length) return this.goods
       let result = this.goods.filter((item) => {
         return !(key.some(i => !this.filter[i].includes(item[i])))
       })
+      return result
+    },
+    optionFilters () {
+      console.log('filter')
+      const { min, max } = this.priceSort
+      let result = this.filteredList
+      if (min > 0 || max < Infinity) {
+        result = result.filter(item => item.price >= min && item.price <= max)
+      }
       return result
     }
   },
   methods: {
     applyFilter () {
-      this.$emit('update:filtered', this.filteredList)
+      this.setParamsUrl()
+      this.updateData()
+    },
+    setParamsUrl () {
+      let keyParams = Object.keys(this.filter).filter(item => this.filter[item].length)
+      const { min, max } = this.priceSort
+      let params = {}
+      keyParams.forEach((key) => {
+        params[key] = this.filter[key].join(',').replace(/ /g, '-')
+      })
+      if (min > 0 || max < Infinity) {
+        params.min = min
+        params.max = max
+      }
+      this.$router.push({ query: params })
+    },
+    updateData () {
+      this.$emit('update:filtered', this.optionFilters)
+    },
+    resetFilter () {
+      this.priceSort.min = 0
+      this.priceSort.max = this.checkboxList.maxPrice
+      Object.keys(this.filter).forEach((item) => {
+        this.filter[item] = []
+      })
+      this.$router.push('page1')
     }
   },
   components: {
     rangePrice
+  },
+  watch: {
+    goods () {
+      console.log('goods', this.goods)
+      this.updateData()
+    }
+  },
+  created () {
+    let params = this.$route.query
+    const key = Object.keys(params)
+    key.forEach((item) => {
+      console.log(params[item])
+      if (item === 'min' || item === 'max') this.priceSort[item] = +params[item]
+      else this.filter[item] = params[item].replace(/-/g, ' ').split(',')
+    })
   }
 }
 </script>
@@ -105,5 +155,9 @@ export default {
 
 .title {
   padding: 20px 0 0 0;
+}
+
+.btn {
+  margin: 0 5px;
 }
 </style>

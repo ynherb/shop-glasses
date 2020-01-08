@@ -47,7 +47,6 @@ export default {
       // обережно тут відбувається неявне перетворення типів
       const from = this.pages * (this.$route.params.id - 1)
       const to = this.pages * this.$route.params.id
-      console.log(this.goods.length)
       // if (this.goods.length) {
       // this.$store.commit('notification/SET_LOADING', true)
       // this.loadingFlag()

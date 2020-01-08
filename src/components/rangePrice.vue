@@ -3,8 +3,8 @@
   <span class="curr">{{currencMin}} {{currencMax}}</span>
 <div class="range-price" ref="strip">
   <div class="line range-price" ref="line"></div>
-  <div id="range1" class="range" @mousedown="clickDown" @touchstart="clickDown" ref="rangeTop"></div>
-  <div id="range2" class="range" @mousedown="clickDown" @touchstart="clickDown" ref="rangeBottom"></div>
+  <div id="range1" data-name="top" class="range" @mousedown="dropDown" @touchstart="dropDown" ref="rangeTop"></div>
+  <div id="range2" data-name="bott" class="range" @mousedown="dropDown" @touchstart="dropDown" ref="rangeBottom"></div>
 </div>
 </div>
 </template>
@@ -12,9 +12,14 @@
 import device from '../modules/device'
 
 let cursor
-let selectedRagne
-let selectedRagnePosition
+let rangeWidth
 let stripWidth
+let elem
+let nameElem
+let position = {
+  top: 0,
+  bott: 0
+}
 
 let eventType = (function () {
   const mobile = { move: 'touchmove', up: 'touchend' }
@@ -23,59 +28,65 @@ let eventType = (function () {
 })()
 
 export default {
-  props: ['maxPrice', 'priceSort'],
+  props: {
+    maxPrice: {
+      type: Number,
+      required: true
+    },
+    priceSort: {
+      type: Object,
+      required: true
+    }
+  },
   data () {
     return {
-      min: 0,
-      max: 0
+      min: 1333,
+      max: 13000
     }
   },
   methods: {
-    clickDown (event) {
-      cursor = event.pageX || event.touches[0].pageX
-      selectedRagne = event.target
-      selectedRagnePosition = event.target.offsetLeft
-      stripWidth = this.$refs.strip.offsetWidth - selectedRagne.offsetWidth
+    dropDown (e) {
+      elem = e.target
+      cursor = (e.pageX || e.touches[0].pageX) - elem.offsetLeft
+      stripWidth = (stripWidth || this.$refs.strip.offsetWidth - rangeWidth)
+      nameElem = e.target.dataset.name
       this.addEvent()
     },
-    drawRange (event) {
-      let pos = (event.pageX || event.touches[0].pageX) - cursor + selectedRagnePosition
+    drawRange (e) {
+      let pos = (e.pageX || e.touches[0].pageX) - cursor
       if (pos < 0) pos = 0
       else if (pos >= stripWidth) pos = stripWidth
-      selectedRagne.style.left = pos + 'px'
-      this.lineDraw()
+      position[nameElem] = pos
+      elem.style.left = pos + 'px'
       this.calcPrice()
     },
-    lineDraw () {
-      const range = this.rangeLeft()
-      const line = this.$refs.line.style
-      const x = Math.abs((range.top - range.bott))
-      const min = (range.top > range.bott) ? range.bott : range.top
-      line.width = x + 'px'
-      line.left = selectedRagne.offsetWidth / 2 + min + 'px'
-    },
     calcPrice () {
-      const range = this.rangeLeft()
-      let top = range.top / stripWidth * this.maxPrice
-      let bott = range.bott / stripWidth * this.maxPrice
+      let { top, bott } = position
+      top = top / stripWidth * this.maxPrice
+      bott = bott / stripWidth * this.maxPrice
       this.min = (top > bott) ? bott : top
       this.max = (top < bott) ? bott : top
-    },
-    rangeLeft () {
-      const elemTop = this.$refs.rangeTop.offsetLeft
-      const elemBottom = this.$refs.rangeBottom.offsetLeft
-      return { top: elemTop, bott: elemBottom }
     },
     updatePrice () {
       window.removeEventListener(eventType.move, this.drawRange)
       window.removeEventListener(eventType.up, this.updatePrice)
       window.onselectstart = null
-      this.$emit('update:priceSort', { min: this.min, max: this.max })
+      // ~~ === Math.floor
+      this.$emit('update:priceSort', { min: ~~this.min, max: ~~this.max })
     },
     addEvent () {
       window.addEventListener(eventType.move, this.drawRange)
       window.addEventListener(eventType.up, this.updatePrice)
       window.onselectstart = () => false
+    },
+    setup () {
+      let min = this.min / this.maxPrice * 100
+      let max = this.max / this.maxPrice * 100
+      let width = this.$refs.strip.offsetWidth
+      console.log((min / 100) * width, (max / 100) * width)
+      position = { top: (min / 100) * 154, bott: (max / 100) * 154 }
+      this.$refs.rangeBottom.style.left = max + '%'
+      this.$refs.rangeTop.style.left = min + '%'
     }
   },
   computed: {
@@ -83,11 +94,21 @@ export default {
       return this.$store.getters['privatAPI/GET_MONEY']
     },
     currencMax () {
-      const max = this.max || this.maxPrice
-      return (max / this.currenc.money).toFixed(0) + ' ' + this.currenc.cod
+      return (this.max / this.currenc.money).toFixed(0) + ' ' + this.currenc.cod
     },
     currencMin () {
       return (this.min / this.currenc.money).toFixed(0) + ' ' + this.currenc.cod
+    }
+  },
+  mounted () {
+    rangeWidth = parseInt(window.getComputedStyle(this.$refs.rangeTop, null).width)
+  },
+  watch: {
+    maxPrice () {
+      console.log(this.priceSort.min)
+      this.min = this.priceSort.min || 0
+      this.max = this.priceSort.max || this.maxPrice
+      this.setup()
     }
   }
 }
@@ -113,9 +134,6 @@ export default {
   &:hover {
     border: solid black 1px;
   }
-}
-#range2 {
-  left: calc(100% - 15px);
 }
 .curr {
   font-size: 14px;
